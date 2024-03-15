@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TechGenius - 商品详情</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <link href="static/productDetail.css" rel="stylesheet" />
+
+    <style>
+          .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+
+      /* 下拉菜单的内容 */
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+      }
+
+      /* 下拉菜单内的链接 */
+      .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+      }
+
+      /* 鼠标悬停时显示下拉菜单 */
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      /* 鼠标悬停时链接的样式 */
+      .dropdown-content a:hover {background-color: #f1f1f1}
+    </style>
+  </head>
+
+  <body>
+    <header class="bg-gray-800">
+      <!-- Navigation -->
+      <nav
+        class="container mx-auto px-4 py-6 flex items-center justify-between"
+      >
+        <a href="#" class="text-2xl font-bold text-white">Easy Cart</a>
+        <ul class="flex space-x-4 text-white">
+          <li><a href="/" class="hover:text-gray-300">Home</a></li>
+          <li>
+            <a href="orders" class="hover:text-gray-300">Orders</a>
+          </li>
+          <li class="dropdown">
+            Products
+            <div class="dropdown-content">
+              <a href="product" class="hover:text-gray-300">Product 1</a>
+              <a href="#" class="hover:text-gray-300">Product 2</a>
+              <a href="#" class="hover:text-gray-300">Product 3</a>
+            </div>
+          </li>
+          <li><a href="cart" class="hover:text-gray-300">Cart</a></li>
+          <li><a href="chat" class="hover:text-gray-300">Chat</a></li>
+          <li><a href="login" class="hover:text-gray-300">logout</a></li>
+        </ul>
+      </nav>
+    </header>
+    <div class="w-full px-20">
+      <div class="flex justify-center items-start py-10">
+        <div class="w-1/2">
+          <img
+            id="detail-img"
+            src="https://cdn4.buysellads.net/uu/1/134924/1684869519-Dev-Exp-Ad_260x200_.png"
+            class="product-image"
+            style="border-radius: 20px"
+          />
+        </div>
+
+        <div class="w-1/2 pl-6">
+          <!-- 商品标题 -->
+          <h2 class="text-2xl font-bold text-black mb-2" id="detail-title">
+            Space Series Cute Bedding Set
+          </h2>
+          <hr class="mb-4" />
+
+          <div class="master-container">
+            <div id="stepper-container">
+              <!-- Steps will be dynamically added here -->
+            </div>
+
+            <div id="price-container">
+              <!-- Price calculation result will be displayed here -->
+            </div>
+            <div class="card cart">
+              <div class="products">
+                <div class="product">
+                  <img
+                    id="detail-img-es"
+                    style="width: 60px; height: 60px"
+                    src="https://cdn4.buysellads.net/uu/1/134924/1684869519-Dev-Exp-Ad_260x200_.png"
+                    class="product-image"
+                    style="border-radius: 20px"
+                  />
+
+                  <div>
+                    <span id="ee"></span>
+                    <p>SKY KING</p>
+                    <p>AI CONTROL</p>
+                  </div>
+                  <div class="quantity">
+                    <button onclick="decreaseQuantity()">
+                      <svg
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        height="14"
+                        width="14"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          stroke-linejoin="round"
+                          stroke-linecap="round"
+                          stroke-width="2.5"
+                          stroke="#47484b"
+                          d="M20 12L4 12"
+                        ></path>
+                      </svg>
+                    </button>
+                    <label id="quantity">2</label>
+                    <button onclick="increaseQuantity()">
+                      <svg
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        height="14"
+                        width="14"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          stroke-linejoin="round"
+                          stroke-linecap="round"
+                          stroke-width="2.5"
+                          stroke="#47484b"
+                          d="M12 4V20M20 12H4"
+                        ></path>
+                      </svg>
+                    </button>
+                  </div>
+
+                  <label class="price small" id="detail-price">$400</label>
+                  <script>
+                    var pricePerItem = localStorage.getItem("detailPrice");
+
+                    // var pricePerItem = 400.00; // 单价
+                    var quantity = 2; // 初始数量
+
+                    function decreaseQuantity() {
+                      if (quantity > 0) {
+                        quantity -= 1;
+                        document.getElementById("quantity").innerText =
+                          quantity;
+                        updateTotal();
+                      }
+                    }
+
+                    function increaseQuantity() {
+                      quantity += 1;
+                      document.getElementById("quantity").innerText = quantity;
+                      updateTotal();
+                    }
+
+                    function updateTotal() {
+                      var subtotal = quantity * pricePerItem;
+                      var discount = subtotal * 0.1; // Assuming a 10% discount
+                      var total = subtotal - discount;
+
+                      document.getElementById("subtotal").innerText =
+                        subtotal.toFixed(2);
+                      document.getElementById("discount").innerText =
+                        discount.toFixed(2);
+                      document.getElementById("total").innerText =
+                        total.toFixed(2);
+                    }
+
+                    window.onload = function () {
+                      updateTotal();
+                    };
+                  </script>
+                </div>
+              </div>
+            </div>
+
+            <div class="card checkout">
+              <label class="title">Checkout</label>
+              <div class="details">
+                <span>Your cart subtotal:</span>
+                <span id="total">Shipping...</span>
+                <span>Discount through applied coupons:</span>
+                <span id="subtotal">47.99</span>
+
+                <span>Shipping fees:</span>
+                <span id="discount">3.99</span>
+              </div>
+              <button
+                onclick="addToCart()"
+                class="checkout-btn"
+                style="margin: 20px 0; background-color: brown"
+              >
+                add Cart
+              </button>
+
+              <form id="order-form" class="checkout-form">
+                <!-- 其他内容保持不变 -->
+
+                <button type="submit" class="checkout-btn">Checkout</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="my-6">
+        <h3 class="text-black text-xl font-bold mb-2">评论</h3>
+        <hr class="mb-4" />
+
+        <!-- 评论列表 -->
+        <div class="comment-list"></div>
+      </div>
+    </div>
+
+    <script>
+      function addToCart() {
+        // 获取商品ID和数量
+        var productId = localStorage.getItem("detailId"); // 假设商品ID已保存在localStorage
+        var quantity = parseInt(document.getElementById("quantity").innerText);
+
+        // 构建请求体
+        var cartData = {
+          product_id: productId,
+          quantity: quantity,
+        };
+
+        // 发送POST请求到后端的 "加入购物车" 接口
+        fetch("/add-to-cart", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(cartData),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            // 处理响应数据
+            if (data.status === "success") {
+              alert("商品已成功加入购物车！");
+            } else {
+              alert("加入购物车失败：" + data.message);
+            }
+          })
+          .catch((error) => {
+            console.error("加入购物车出错：", error);
+            alert("加入购物车失败，请稍后重试！");
+          });
+      }
+    </script>
+    <script>
+      window.onload = function () {
+        // 从localStorage获取数据
+        var imgSrc = localStorage.getItem("detailImgSrc");
+        var title = localStorage.getItem("detailTitle");
+
+        var price = localStorage.getItem("detailPrice");
+        var category = localStorage.getItem("detailCategory");
+        console.log(price, category);
+        // 在页面上显示数据
+        document.getElementById("detail-img").src = imgSrc;
+        document.getElementById("detail-img-es").src = imgSrc;
+
+        document.getElementById("detail-price").innerText = "$" + price;
+        document.getElementById("ee").innerText = category;
+        document.getElementById("detail-title").innerText = title;
+      };
+    </script>
+    <script>
+      var productId = localStorage.getItem("detailId");
+
+      fetch(`/comments/${productId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          const commentsContainer = document.querySelector(".comment-list");
+          console.log(data);
+          data.data.forEach((comment) => {
+            const commentElement = document.createElement("div");
+            commentElement.className = "comment-item";
+            commentElement.innerHTML = `
+            
+            <div class="comment-content">
+                <p class="text-sm font-bold">${comment.user.username}</p>
+                <p class="text">${comment.content}</p>
+                <p class="text-sm">${new Date(
+                  comment.created_at
+                ).toLocaleString()}</p>
+            </div>
+        `;
+            commentsContainer.appendChild(commentElement);
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to fetch comments:", error);
+        });
+    </script>
+    <script>
+      var comments = [];
+
+      comments.forEach(function (comment) {
+        var commentItem = document.createElement("div");
+        commentItem.className = "comment-item";
+
+        // Set the HTML content of the comment
+        var contentHtml = "";
+        switch (comment.type) {
+          case "text":
+            contentHtml = '<p class="text">' + comment.content + "</p>";
+            break;
+          case "image":
+            contentHtml =
+              '<img src="' +
+              comment.imageUrl +
+              '" alt="Comment Image" class="w-40 h-auto">' +
+              '<p class="text">' +
+              comment.content +
+              "</p>";
+            break;
+          case "video":
+            contentHtml =
+              '<video src="' +
+              comment.videoUrl +
+              '" class="w-64" controls></video>' +
+              '<p class="text">' +
+              comment.content +
+              "</p>";
+            break;
+        }
+
+        commentItem.innerHTML =
+          '<img src="' +
+          comment.avatar +
+          '" alt="User Avatar" class="comment-avatar">' +
+          '<div class="comment-content">' +
+          '<p class="text-sm font-bold">' +
+          comment.user +
+          "</p>" +
+          contentHtml +
+          "</div>";
+
+        // Append the comment to the page
+        document.querySelector(".comment-list").appendChild(commentItem);
+      });
+
+      document
+        .getElementById("order-form")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // 阻止表单默认提交行为
+
+          var quantity = parseInt(
+            document.getElementById("quantity").innerText
+          );
+          var unitPrice = parseFloat(localStorage.getItem("detailPrice"));
+          var totalPriceElement = document
+            .getElementById("total")
+            .innerText.replace("$", "");
+          var totalPrice = parseFloat(totalPriceElement);
+          if (isNaN(quantity) || isNaN(unitPrice)) {
+            alert("商品数量或单价无效，请检查后再提交。");
+            return;
+          }
+
+          // 检查总价是否有效，如果不是则重新计算
+          if (isNaN(totalPrice)) {
+            totalPrice = quantity * unitPrice;
+          }
+          // 收集订单信息
+          var orderData = {
+            user_id: 1,
+            product_id: localStorage.getItem("detailId"),
+            quantity: quantity,
+            unit_price: unitPrice,
+            total_price: totalPrice,
+            status: "pending",
+          };
+
+          console.log(orderData);
+          // 发送订单数据到服务器
+          // 这里使用的是fetch API，你可以根据实际情况使用其他API
+          fetch("create-order", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(orderData),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log("Order submitted successfully:", data);
+              alert("订单提交成功！");
+              // 这里可以添加一些订单提交成功后的操作，比如页面跳转
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("订单提交失败，请稍后重试！");
+            });
+        });
+    </script>
+  </body>
+</html>

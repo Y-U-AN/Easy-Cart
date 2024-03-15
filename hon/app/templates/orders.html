@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>订单列表</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 10;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+      }
+
+      .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        max-width: 500px;
+      }
+
+      .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      .close:hover,
+      .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+      }
+
+      .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+      }
+
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      .dropdown-content a:hover {background-color: #f1f1f1}
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <header class="bg-gray-800">
+      <!-- Navigation -->
+      <nav
+        class="container mx-auto px-4 py-6 flex items-center justify-between"
+      >
+        <a href="#" class="text-2xl font-bold text-white">Easy Cart</a>
+        <ul class="flex space-x-4 text-white">
+          <li><a href="/" class="hover:text-gray-300">Home</a></li>
+          <li>
+            <a href="orders" class="hover:text-gray-300">Orders</a>
+          </li>
+          <li class="dropdown">
+            Products
+            <div class="dropdown-content">
+              <a href="product" class="hover:text-gray-300">Product 1</a>
+              <a href="#" class="hover:text-gray-300">Product 2</a>
+              <a href="#" class="hover:text-gray-300">Product 3</a>
+            </div>
+          </li>
+          <li><a href="cart" class="hover:text-gray-300">Cart</a></li>
+          <li><a href="chat" class="hover:text-gray-300">Chat</a></li>
+          <li><a href="login" class="hover:text-gray-300">logout</a></li>
+        </ul>
+      </nav>
+    </header>
+    <div class="container mx-auto px-4 py-8">
+      <div
+        id="orders-container"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      ></div>
+    </div>
+
+    <div id="commentModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 class="font-bold text-lg mb-4">Submit Comment</h2>
+        <form id="commentForm">
+          <textarea
+            id="commentText"
+            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            rows="4"
+            placeholder="Your Comment..."
+          ></textarea>
+          <button
+            type="submit"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-4"
+          >
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      const ordersApiUrl = "/orderslist";
+      let currentOrderId = null; // 用于保存当前评论的订单ID
+      let currentProductId = null; // 用于保存当前评论的产品ID
+
+      fetch(ordersApiUrl)
+        .then((response) => response.json())
+        .then((data) => {
+          const ordersContainer = document.getElementById("orders-container");
+          data.data.forEach((order) => {
+            const orderElement = document.createElement("div");
+            orderElement.classList.add(
+              "bg-white",
+              "p-4",
+              "rounded-lg",
+              "shadow-lg",
+              "overflow-hidden"
+            );
+            orderElement.innerHTML = `
+                  <div class="flex justify-between items-center">
+                      <h2 class="text-xl font-semibold">Order #${order.order_id}</h2>
+                      <span class="text-sm text-gray-600">${order.created_at}</span>
+                  </div>
+                  <div class="mt-4 mb-4">
+                      <img src="${order.product.img_src}" alt="${order.product.title}" class="w-full h-48 object-cover">
+                  </div>
+                  <p class="font-bold">${order.product.title}</p>
+                  <p class="text-sm text-gray-600">Quantity:${order.quantity}</p>
+                  <p class="text-sm text-gray-600">UnitPrice：$${order.unit_price}</p>
+                  <p class="text-sm text-gray-600">TotalPirce：$${order.total_price}</p>
+                  <p class="text-sm text-gray-600 mb-4">Status：${order.status}</p>
+                  <button onclick="showCommentModal(${order.order_id}, ${order.product.product_id})" class="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition duration-300">Comment</button>
+              `;
+            ordersContainer.appendChild(orderElement);
+          });
+        })
+        .catch((error) => {
+          console.error("Failed to fetch orders:", error);
+        });
+
+      function showCommentModal(orderId, productId) {
+        currentOrderId = orderId; // 保存当前订单ID
+        currentProductId = productId; // 保存当前产品ID
+        modal.style.display = "block";
+      }
+
+      document
+        .getElementById("commentForm")
+        .addEventListener("submit", function (event) {
+          event.preventDefault(); // 阻止表单默认提交行为
+          const commentText = document.getElementById("commentText").value;
+
+          // 构建要发送的数据
+          const commentData = {
+            order_id: currentOrderId,
+            product_id: currentProductId,
+            content: commentText,
+          };
+
+          // 发送POST请求到后端添加评论的接口
+          fetch("/add-comment", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(commentData),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              console.log(data);
+              modal.style.display = "none"; // 提交成功后关闭模态框
+              alert("评论添加成功！");
+            })
+            .catch((error) => {
+              console.error("Error:", error);
+              alert("评论添加失败！");
+            });
+        });
+
+      var modal = document.getElementById("commentModal");
+      var span = document.getElementsByClassName("close")[0];
+
+      span.onclick = function () {
+        modal.style.display = "none";
+      };
+
+      window.onclick = function (event) {
+        if (event.target == modal) {
+          modal.style.display = "none";
+        }
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>商品管理</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+          .dropdown {
+        position: relative;
+        display: inline-block;
+      }
+
+      /* 下拉菜单的内容 */
+      .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+      }
+
+      /* 下拉菜单内的链接 */
+      .dropdown-content a {
+        color: black;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: block;
+      }
+
+      /* 鼠标悬停时显示下拉菜单 */
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      /* 鼠标悬停时链接的样式 */
+      .dropdown-content a:hover {background-color: #f1f1f1}
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <nav class="bg-gray-800 text-white p-4">
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="text-lg font-semibold">System</div>
+        <div class="flex">
+          <a href="#" class="px-4 py-2 hover:bg-gray-700 rounded"
+            >Admin Interface</a
+          >
+          <a href="/product_manager" class="px-4 py-2 hover:bg-gray-700 rounded"
+            >Product Management</a
+          >
+          <a href="/adminMessage" class="px-4 py-2 hover:bg-gray-700 rounded"
+            >Customer Service</a
+          >
+          <a href="/adminLogin" class="px-4 py-2 hover:bg-gray-700 rounded"
+            >log out</a
+          >
+        </div>
+      </div>
+    </nav>
+    <div class="flex justify-end p-8">
+      <button
+        id="add-btn"
+        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      >
+        Add
+      </button>
+    </div>
+
+    <div class="p-8">
+      <table class="table-auto w-full bg-white rounded-lg overflow-hidden">
+        <thead class="bg-gray-200 text-gray-600">
+          <tr>
+            <th class="px-4 py-2">ID</th>
+            <th class="px-4 py-2">Image</th>
+            <th class="px-4 py-2">Title</th>
+            <th class="px-4 py-2">Description</th>
+            <th class="px-4 py-2">Category</th>
+            <th class="px-4 py-2">Price</th>
+            <th class="px-4 py-2">Action</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- 表格数据行将通过JavaScript动态生成 -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 弹出框，用于新增和修改 -->
+    <div
+      id="modal"
+      class="hidden fixed z-10 left-0 top-0 w-full h-full overflow-auto bg-gray-500 bg-opacity-75"
+    >
+      <div class="bg-white p-4 max-w-lg mx-auto mt-20 rounded shadow-lg">
+        <div class="mb-2">
+          <label class="block">Title</label>
+          <input
+            type="text"
+            id="modal-title"
+            class="w-full p-2 border rounded"
+          />
+        </div>
+
+        <div>
+          <label
+            for="photo"
+            class="text-sm font-medium text-gray-700 block mb-2"
+            >Product Image</label
+          >
+          <input type="hidden" id="photo-url" name="photoUrl" />
+
+          <input
+            type="file"
+            name="photo"
+            id="photo"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+        <div class="mb-2">
+          <label class="block">Description</label>
+          <textarea
+            id="modal-description"
+            class="w-full p-2 border rounded"
+          ></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="block">Category</label>
+          <input
+            type="text"
+            id="modal-category"
+            class="w-full p-2 border rounded"
+          />
+        </div>
+        <div class="mb-2">
+          <label class="block">Price</label>
+          <input
+            type="text"
+            id="modal-price"
+            class="w-full p-2 border rounded"
+          />
+        </div>
+        <div class="flex justify-end">
+          <button
+            id="modal-save"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2"
+          >
+            Save
+          </button>
+          <button
+            id="modal-close"
+            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>
+  <script>
+    document
+      .getElementById("photo")
+      .addEventListener("change", function (event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append("photo", file);
+
+        fetch("/upload-image", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status == "success") {
+              // 服务器应返回图片的URL
+              const photoUrl = data.code.url; // 假设返回的URL在data.url中
+              document.getElementById("photo-url").value = photoUrl; // 将URL保存在一个隐藏的输入字段中，以便后续使用
+              alert("图片上传成功");
+            } else {
+              alert("图片上传失败: " + data.message);
+            }
+          })
+          .catch((error) => console.error("Error uploading image:", error));
+      });
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const addBtn = document.getElementById("add-btn");
+      const modal = document.getElementById("modal");
+      const modalClose = document.getElementById("modal-close");
+      const modalSave = document.getElementById("modal-save");
+      const tableBody = document.getElementById("table-body");
+
+      let editingProductId = null; // 用于追踪当前正在编辑的商品ID
+
+      // 从服务器获取商品数据并渲染表格
+      function fetchProducts() {
+        fetch("/product_list")
+          .then((response) => response.json())
+          .then((data) => {
+            products = data; // 假设后端返回的是一个商品数组
+            renderTable();
+          })
+          .catch((error) => console.error("Error fetching products:", error));
+      }
+
+      function uploadImage(callback) {
+        const photoFile = document.getElementById("photo").files[0];
+        if (!photoFile) {
+          callback(); // 如果没有选择图片，直接执行回调
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("photo", photoFile);
+
+        fetch("/upload-image", {
+          method: "POST",
+          body: formData,
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.success) {
+              const photoUrl = data.url; // 假设服务器返回的图片URL在data.url中
+              document.getElementById("photo-url").value = photoUrl; // 保存图片URL以便稍后使用
+              callback(); // 图片上传成功后，执行回调函数以保存产品信息
+            } else {
+              alert("图片上传失败: " + data.message);
+            }
+          })
+          .catch((error) => console.error("Error uploading image:", error));
+      }
+
+      // 渲染商品表格
+      function renderTable() {
+        tableBody.innerHTML = ""; // 清空现有数据
+        products.forEach((product) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+                    <td class="border px-4 py-2">${product.id}</td>
+                    <td class="border px-4 py-2"><img src="${product.img_src}" alt="图片" class="w-12 h-12"></td>
+                    <td class="border px-4 py-2">${product.title}</td>
+                    <td class="border px-4 py-2">${product.description}</td>
+                    <td class="border px-4 py-2">${product.category}</td>
+                    <td class="border px-4 py-2">${product.price}</td>
+                    <td class="border px-4 py-2">
+                        <button class="edit-btn bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded">Edit</button>
+                        <button class="delete-btn bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded">Delete</button>
+                    </td>
+                `;
+          tableBody.appendChild(row);
+
+          // 给删除按钮添加事件监听器
+          row
+            .querySelector(".delete-btn")
+            .addEventListener("click", () => deleteProduct(product.id));
+
+          // 给修改按钮添加事件监听器
+          row.querySelector(".edit-btn").addEventListener("click", () => {
+            editingProductId = product.id; // 设置当前正在编辑的商品ID
+            openModalWithProductData(product); // 用商品数据填充模态框并打开
+          });
+        });
+      }
+
+      // 打开模态框并填充商品数据（用于编辑）
+      function openModalWithProductData(product) {
+        document.getElementById("modal-title").value = product.title;
+        document.getElementById("modal-description").value =
+          product.description;
+        document.getElementById("modal-category").value = product.category;
+        document.getElementById("modal-price").value = product.price;
+        document.getElementById("photo-url").value = product.img_src;
+        modal.classList.remove("hidden");
+      }
+
+      // 添加或更新商品
+      function saveProduct() {
+        const product = {
+          title: document.getElementById("modal-title").value,
+          description: document.getElementById("modal-description").value,
+          category: document.getElementById("modal-category").value,
+          price: document.getElementById("modal-price").value,
+          img_src: document.getElementById("photo-url").value,
+        };
+
+        let url = "/add-product";
+        let method = "POST";
+
+        if (editingProductId) {
+          url = `/update-product/${editingProductId}`;
+        }
+
+        fetch(url, {
+          method: method,
+          headers: {
+            "Content-Type": "application/json", // 设置请求头为 'application/json'
+          },
+          body: JSON.stringify(product), // 将 JavaScript 对象转换为 JSON 字符串
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status == "success") {
+              alert("操作成功");
+              fetchProducts();
+              closeModal();
+            } else {
+              alert("操作失败: " + data.message);
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      // 删除商品
+      function deleteProduct(productId) {
+        fetch(`/delete-product/${productId}`, { method: "POST" }) // 注意：这里使用POST作为示例，实际可能需要调整
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.code == 0) {
+              alert("商品删除成功");
+              fetchProducts(); // 重新获取并渲染商品列表
+            } else {
+              alert("商品删除失败: " + data.message);
+            }
+          })
+          .catch((error) => console.error("Error deleting product:", error));
+      }
+
+      // 打开模态框（用于添加新商品）
+      addBtn.addEventListener("click", function () {
+        editingProductId = null; // 重置编辑状态
+        document.getElementById("modal-title").value = "";
+        document.getElementById("modal-description").value = "";
+        document.getElementById("modal-category").value = "";
+        document.getElementById("modal-price").value = "";
+        modal.classList.remove("hidden");
+      });
+
+      // 关闭模态框
+      modalClose.addEventListener("click", function () {
+        closeModal();
+      });
+
+      // 关闭模态框的逻辑
+      function closeModal() {
+        modal.classList.add("hidden");
+      }
+
+      // 保存按钮点击事件，用于新增或修改
+      modalSave.addEventListener("click", function () {
+        saveProduct();
+      });
+
+      fetchProducts(); // 页面加载时获取并渲染商品列表
+    });
+  </script>
+</html>
